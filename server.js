@@ -11,8 +11,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 /* ── SUPABASE ── */
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_URL || "https://foufznyksfrjxifqotva.supabase.co",
+  process.env.SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvdWZ6bnlrc2ZyanhpZnFvdHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NjYzMzMsImV4cCI6MjA4OTA0MjMzM30.n8xpT_8pQdYzF5PbFBIXZ_JgTCWvDHoAUD40PDHwU0c"
 );
 
 const JWT_SECRET = process.env.JWT_SECRET || "invnt-jwt-secret-2024";

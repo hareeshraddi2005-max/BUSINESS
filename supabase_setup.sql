@@ -1,5 +1,10 @@
 -- Run this in Supabase SQL Editor
 
+-- Disable RLS on all tables so anon key works
+alter table if exists users disable row level security;
+alter table if exists products disable row level security;
+alter table if exists sales disable row level security;
+
 create table if not exists users (
   id text primary key,
   username text unique not null,
