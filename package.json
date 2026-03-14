@@ -1,0 +1,15 @@
+{
+  "name": "invnt",
+  "version": "1.0.0",
+  "description": "Business Inventory Manager",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "uuid": "^9.0.0"
+  }
+}

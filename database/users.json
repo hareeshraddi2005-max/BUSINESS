@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "a2b2f4c3-1d78-4122-8027-b18abc24691c",
+    "username": "admin",
+    "password": "$2b$10$81Z8e2zQlrQRVz49zWQv9eQwpWmux0WPtnMxhzPJFawKxrB3cqNOi",
+    "role": "admin",
+    "createdAt": "2026-03-14T05:17:02.675Z"
+  }
+]

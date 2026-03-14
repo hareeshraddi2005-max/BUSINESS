@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVNT - Products</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <nav class="bg-indigo-700 text-white px-8 py-4 flex items-center justify-between shadow-lg">
+    <span class="text-2xl font-black tracking-wide">INVNT</span>
+    <div class="flex gap-6 text-sm font-semibold">
+      <a href="dashboard.html" class="hover:text-indigo-200">Dashboard</a>
+      <a href="products.html" class="hover:text-indigo-200 border-b-2 border-white pb-1">Products</a>
+      <a href="sales.html" class="hover:text-indigo-200">Sales</a>
+      <a href="admin.html" id="adminLink" class="hover:text-indigo-200 hidden">Admin</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="userBadge" class="bg-indigo-500 px-3 py-1 rounded-full text-xs"></span>
+      <button onclick="logout()" class="bg-white text-indigo-700 font-bold px-4 py-1 rounded-lg hover:bg-indigo-100 transition text-sm">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">Products</h2>
+      <button onclick="openProductModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-lg transition">+ Add Product</button>
+    </div>
+
+    <!-- SEARCH & FILTER -->
+    <div class="flex gap-3 mb-5">
+      <input id="searchInput" oninput="filterProducts()" placeholder="Search products..." class="border border-gray-300 rounded-lg p-2 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <select id="categoryFilter" onchange="filterProducts()" class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-indigo-50 text-indigo-700 font-bold">
+          <tr>
+            <th class="p-4 text-left">Name</th>
+            <th class="p-4 text-left">Category</th>
+            <th class="p-4 text-left">Price</th>
+            <th class="p-4 text-left">Stock</th>
+            <th class="p-4 text-left">Status</th>
+            <th class="p-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <h3 id="modalTitle" class="text-xl font-bold mb-5 text-gray-800">Add Product</h3>
+      <input type="hidden" id="editId">
+      <input id="pName" placeholder="Product Name" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <input id="pCategory" placeholder="Category (e.g. Electronics)" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <input id="pPrice" type="number" placeholder="Price" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <input id="pStock" type="number" placeholder="Stock Quantity" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <input id="pThreshold" type="number" placeholder="Low Stock Alert Threshold (default 5)" class="border border-gray-300 rounded-lg p-3 w-full mb-5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <div class="flex gap-3">
+        <button onclick="saveProduct()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex-1 py-3 rounded-lg transition">Save</button>
+        <button onclick="closeProductModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold flex-1 py-3 rounded-lg transition">Cancel</button>
+      </div>
+      <p id="productError" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

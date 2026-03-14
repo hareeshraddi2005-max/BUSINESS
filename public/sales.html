@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVNT - Sales</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <nav class="bg-indigo-700 text-white px-8 py-4 flex items-center justify-between shadow-lg">
+    <span class="text-2xl font-black tracking-wide">INVNT</span>
+    <div class="flex gap-6 text-sm font-semibold">
+      <a href="dashboard.html" class="hover:text-indigo-200">Dashboard</a>
+      <a href="products.html" class="hover:text-indigo-200">Products</a>
+      <a href="sales.html" class="hover:text-indigo-200 border-b-2 border-white pb-1">Sales</a>
+      <a href="admin.html" id="adminLink" class="hover:text-indigo-200 hidden">Admin</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="userBadge" class="bg-indigo-500 px-3 py-1 rounded-full text-xs"></span>
+      <button onclick="logout()" class="bg-white text-indigo-700 font-bold px-4 py-1 rounded-lg hover:bg-indigo-100 transition text-sm">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Sales</h2>
+
+    <!-- RECORD SALE -->
+    <div class="bg-white rounded-xl shadow p-6 mb-8">
+      <h3 class="font-bold text-gray-700 mb-4">Record New Sale</h3>
+      <div class="flex gap-3 flex-wrap">
+        <select id="saleProduct" class="border border-gray-300 rounded-lg p-3 flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="">Select Product</option>
+        </select>
+        <input id="saleQty" type="number" min="1" placeholder="Quantity" class="border border-gray-300 rounded-lg p-3 w-32 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        <button onclick="recordSale()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg transition">Record Sale</button>
+      </div>
+      <p id="saleMsg" class="text-sm mt-3 hidden"></p>
+    </div>
+
+    <!-- SALES HISTORY -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <div class="p-4 border-b flex items-center justify-between">
+        <h3 class="font-bold text-gray-700">Sales History</h3>
+        <input id="salesSearch" oninput="filterSales()" placeholder="Search..." class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      </div>
+      <table class="w-full text-sm">
+        <thead class="bg-green-50 text-green-700 font-bold">
+          <tr>
+            <th class="p-4 text-left">Product</th>
+            <th class="p-4 text-left">Qty</th>
+            <th class="p-4 text-left">Total</th>
+            <th class="p-4 text-left">Sold By</th>
+            <th class="p-4 text-left">Date</th>
+            <th class="p-4 text-left" id="deleteColHeader"></th>
+          </tr>
+        </thead>
+        <tbody id="salesTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

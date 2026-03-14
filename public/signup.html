@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVNT - Sign Up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-900 to-indigo-800 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-10">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-black text-indigo-700">INVNT</h1>
+      <p class="text-gray-500 mt-1">Create your account</p>
+    </div>
+
+    <input id="username" placeholder="Username" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+    <input id="password" type="password" placeholder="Password" class="border border-gray-300 rounded-lg p-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+    <select id="role" class="border border-gray-300 rounded-lg p-3 w-full mb-5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <option value="staff">Staff</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button onclick="signup()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold w-full py-3 rounded-lg transition">Create Account</button>
+    <p id="signupMsg" class="text-sm mt-3 text-center hidden"></p>
+    <p class="text-center mt-5 text-gray-500">Already have an account? <a href="login.html" class="text-indigo-600 font-semibold hover:underline">Login</a></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
