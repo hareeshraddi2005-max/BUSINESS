@@ -163,7 +163,7 @@ app.get("/export-sales",(req,res)=>{
 res.json(read(SALES))
 })
 app.get("/", (req, res) => {
-  res.redirect("login.html")
+  res.redirect("/login.html")
 })
 const PORT = process.env.PORT || 3000
 
