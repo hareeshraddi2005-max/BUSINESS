@@ -1,170 +1,158 @@
-const express = require("express")
-const fs = require("fs")
-const bcrypt = require("bcrypt")
-const { v4: uuid } = require("uuid")
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const bcrypt = require("bcrypt");
+const { v4: uuid } = require("uuid");
 
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(express.static("public"))
+app.use(express.json());
 
-const USERS = "./database/users.json"
-const PRODUCTS = "./database/products.json"
-const SALES = "./database/sales.json"
+// serve static files from root
+app.use(express.static(__dirname));
 
-function read(file){
-return JSON.parse(fs.readFileSync(file))
+/* JSON FILE PATHS */
+const USERS = path.join(__dirname, "users.json");
+const PRODUCTS = path.join(__dirname, "products.json");
+const SALES = path.join(__dirname, "sales.json");
+
+/* READ / WRITE FUNCTIONS */
+
+function read(file) {
+  if (!fs.existsSync(file)) return [];
+  return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-function write(file,data){
-fs.writeFileSync(file,JSON.stringify(data,null,2))
+function write(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 /* SIGNUP */
 
-app.post("/signup", async (req,res)=>{
+app.post("/signup", async (req, res) => {
+  const users = read(USERS);
+  const { username, password } = req.body;
 
-const users = read(USERS)
+  const hashed = await bcrypt.hash(password, 10);
 
-const {username,password} = req.body
+  users.push({
+    id: uuid(),
+    username,
+    password: hashed,
+    role: "admin"
+  });
 
-const hashed = await bcrypt.hash(password,10)
+  write(USERS, users);
 
-users.push({
-id:uuid(),
-username,
-password:hashed,
-role:"admin"
-})
-
-write(USERS,users)
-
-res.json({message:"User created"})
-
-})
+  res.json({ message: "User created" });
+});
 
 /* LOGIN */
 
-app.post("/login", async (req,res)=>{
+app.post("/login", async (req, res) => {
+  const users = read(USERS);
+  const { username, password } = req.body;
 
-const users = read(USERS)
+  const user = users.find(u => u.username === username);
 
-const {username,password} = req.body
+  if (!user) return res.status(400).json({ error: "User not found" });
 
-const user = users.find(u=>u.username===username)
+  const valid = await bcrypt.compare(password, user.password);
 
-if(!user){
-return res.status(400).json({error:"User not found"})
-}
+  if (!valid) return res.status(400).json({ error: "Wrong password" });
 
-const valid = await bcrypt.compare(password,user.password)
-
-if(!valid){
-return res.status(400).json({error:"Wrong password"})
-}
-
-res.json({message:"Login success",user})
-
-})
+  res.json({ message: "Login success", user });
+});
 
 /* PRODUCTS */
 
-app.get("/products",(req,res)=>{
-res.json(read(PRODUCTS))
-})
+app.get("/products", (req, res) => {
+  res.json(read(PRODUCTS));
+});
 
-app.post("/products",(req,res)=>{
+app.post("/products", (req, res) => {
+  const products = read(PRODUCTS);
 
-const products = read(PRODUCTS)
+  const product = {
+    id: uuid(),
+    name: req.body.name,
+    price: req.body.price,
+    stock: req.body.stock
+  };
 
-const product={
-id:uuid(),
-name:req.body.name,
-price:req.body.price,
-stock:req.body.stock
-}
+  products.push(product);
 
-products.push(product)
+  write(PRODUCTS, products);
 
-write(PRODUCTS,products)
+  res.json(product);
+});
 
-res.json(product)
+app.delete("/products/:id", (req, res) => {
+  let products = read(PRODUCTS);
 
-})
+  products = products.filter(p => p.id !== req.params.id);
 
-app.delete("/products/:id",(req,res)=>{
+  write(PRODUCTS, products);
 
-let products = read(PRODUCTS)
-
-products = products.filter(p=>p.id!==req.params.id)
-
-write(PRODUCTS,products)
-
-res.json({message:"Deleted"})
-
-})
+  res.json({ message: "Deleted" });
+});
 
 /* SALES */
 
-app.post("/sale",(req,res)=>{
+app.post("/sale", (req, res) => {
+  const sales = read(SALES);
+  const products = read(PRODUCTS);
 
-const sales = read(SALES)
-const products = read(PRODUCTS)
+  const product = products.find(p => p.id === req.body.productId);
 
-const product = products.find(p=>p.id===req.body.productId)
+  if (!product) return res.status(404).json({ error: "Product not found" });
 
-if(!product){
-return res.status(404).json({error:"Product not found"})
-}
+  if (product.stock < req.body.quantity)
+    return res.status(400).json({ error: "Not enough stock" });
 
-if(product.stock < req.body.quantity){
-return res.status(400).json({error:"Not enough stock"})
-}
+  product.stock -= req.body.quantity;
 
-product.stock -= req.body.quantity
+  sales.push({
+    id: uuid(),
+    product: product.name,
+    quantity: req.body.quantity,
+    date: new Date()
+  });
 
-sales.push({
-id:uuid(),
-product:product.name,
-quantity:req.body.quantity,
-date:new Date()
-})
+  write(PRODUCTS, products);
+  write(SALES, sales);
 
-write(PRODUCTS,products)
-write(SALES,sales)
-
-res.json({message:"Sale recorded"})
-
-})
+  res.json({ message: "Sale recorded" });
+});
 
 /* DASHBOARD */
 
-app.get("/dashboard",(req,res)=>{
+app.get("/dashboard", (req, res) => {
+  const products = read(PRODUCTS);
+  const sales = read(SALES);
 
-const products = read(PRODUCTS)
-const sales = read(SALES)
+  const revenue = sales.reduce((sum, s) => sum + s.quantity, 0);
 
-const revenue = sales.reduce((sum,s)=>sum+s.quantity,0)
+  const lowStock = products.filter(p => p.stock < 5);
 
-const lowStock = products.filter(p=>p.stock < 5)
+  res.json({
+    totalProducts: products.length,
+    totalSales: sales.length,
+    revenue,
+    lowStock
+  });
+});
 
-res.json({
-totalProducts:products.length,
-totalSales:sales.length,
-revenue,
-lowStock
-})
+/* ROOT PAGE */
 
-})
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "login.html"));
+});
 
-/* EXPORT SALES */
+/* START SERVER */
 
-app.get("/export-sales",(req,res)=>{
-res.json(read(SALES))
-})
-
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-console.log("Server running on port " + PORT)
-})
+  console.log("Server running on port " + PORT);
+});
