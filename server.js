@@ -6,7 +6,7 @@ const { v4: uuid } = require("uuid")
 const app = express()
 
 app.use(express.json())
-app.use(express.static("public"))
+app.use(express.static(__dirname))
 
 const USERS = "./database/users.json"
 const PRODUCTS = "./database/products.json"
