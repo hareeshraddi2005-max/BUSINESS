@@ -1,172 +1,200 @@
 const express = require("express")
 const fs = require("fs")
+const path = require("path")
 const bcrypt = require("bcrypt")
 const { v4: uuid } = require("uuid")
 
 const app = express()
 
 app.use(express.json())
-app.use(express.static(__dirname))
 
-const USERS = "./database/users.json"
-const PRODUCTS = "./database/products.json"
-const SALES = "./database/sales.json"
+// serve static files (html, css, js)
+app.use(express.static(path.join(__dirname)))
 
-function read(file){
-return JSON.parse(fs.readFileSync(file))
+// file paths
+const USERS = path.join(__dirname, "users.json")
+const PRODUCTS = path.join(__dirname, "products.json")
+const SALES = path.join(__dirname, "sales.json")
+
+/* -------------------------
+   HELPER FUNCTIONS
+------------------------- */
+
+function read(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"))
+  } catch (err) {
+    return []
+  }
 }
 
-function write(file,data){
-fs.writeFileSync(file,JSON.stringify(data,null,2))
+function write(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2))
 }
 
-/* SIGNUP */
+/* -------------------------
+   SIGNUP
+------------------------- */
 
-app.post("/signup", async (req,res)=>{
+app.post("/signup", async (req, res) => {
 
-const users = read(USERS)
+  const users = read(USERS)
 
-const {username,password} = req.body
+  const { username, password } = req.body
 
-const hashed = await bcrypt.hash(password,10)
+  const hashed = await bcrypt.hash(password, 10)
 
-users.push({
-id:uuid(),
-username,
-password:hashed,
-role:"admin"
+  users.push({
+    id: uuid(),
+    username,
+    password: hashed,
+    role: "admin"
+  })
+
+  write(USERS, users)
+
+  res.json({ message: "User created" })
 })
 
-write(USERS,users)
+/* -------------------------
+   LOGIN
+------------------------- */
 
-res.json({message:"User created"})
+app.post("/login", async (req, res) => {
 
+  const users = read(USERS)
+
+  const { username, password } = req.body
+
+  const user = users.find(u => u.username === username)
+
+  if (!user) {
+    return res.status(400).json({ error: "User not found" })
+  }
+
+  const valid = await bcrypt.compare(password, user.password)
+
+  if (!valid) {
+    return res.status(400).json({ error: "Wrong password" })
+  }
+
+  res.json({ message: "Login success", user })
 })
 
-/* LOGIN */
+/* -------------------------
+   PRODUCTS
+------------------------- */
 
-app.post("/login", async (req,res)=>{
-
-const users = read(USERS)
-
-const {username,password} = req.body
-
-const user = users.find(u=>u.username===username)
-
-if(!user){
-return res.status(400).json({error:"User not found"})
-}
-
-const valid = await bcrypt.compare(password,user.password)
-
-if(!valid){
-return res.status(400).json({error:"Wrong password"})
-}
-
-res.json({message:"Login success",user})
-
+app.get("/products", (req, res) => {
+  res.json(read(PRODUCTS))
 })
 
-/* PRODUCTS */
+app.post("/products", (req, res) => {
 
-app.get("/products",(req,res)=>{
-res.json(read(PRODUCTS))
+  const products = read(PRODUCTS)
+
+  const product = {
+    id: uuid(),
+    name: req.body.name,
+    price: req.body.price,
+    stock: req.body.stock
+  }
+
+  products.push(product)
+
+  write(PRODUCTS, products)
+
+  res.json(product)
 })
 
-app.post("/products",(req,res)=>{
+app.delete("/products/:id", (req, res) => {
 
-const products = read(PRODUCTS)
+  let products = read(PRODUCTS)
 
-const product={
-id:uuid(),
-name:req.body.name,
-price:req.body.price,
-stock:req.body.stock
-}
+  products = products.filter(p => p.id !== req.params.id)
 
-products.push(product)
+  write(PRODUCTS, products)
 
-write(PRODUCTS,products)
-
-res.json(product)
-
+  res.json({ message: "Deleted" })
 })
 
-app.delete("/products/:id",(req,res)=>{
+/* -------------------------
+   SALES
+------------------------- */
 
-let products = read(PRODUCTS)
+app.post("/sale", (req, res) => {
 
-products = products.filter(p=>p.id!==req.params.id)
+  const sales = read(SALES)
+  const products = read(PRODUCTS)
 
-write(PRODUCTS,products)
+  const product = products.find(p => p.id === req.body.productId)
 
-res.json({message:"Deleted"})
+  if (!product) {
+    return res.status(404).json({ error: "Product not found" })
+  }
 
+  if (product.stock < req.body.quantity) {
+    return res.status(400).json({ error: "Not enough stock" })
+  }
+
+  product.stock -= req.body.quantity
+
+  sales.push({
+    id: uuid(),
+    product: product.name,
+    quantity: req.body.quantity,
+    date: new Date()
+  })
+
+  write(PRODUCTS, products)
+  write(SALES, sales)
+
+  res.json({ message: "Sale recorded" })
 })
 
-/* SALES */
+/* -------------------------
+   DASHBOARD
+------------------------- */
 
-app.post("/sale",(req,res)=>{
+app.get("/dashboard", (req, res) => {
 
-const sales = read(SALES)
-const products = read(PRODUCTS)
+  const products = read(PRODUCTS)
+  const sales = read(SALES)
 
-const product = products.find(p=>p.id===req.body.productId)
+  const revenue = sales.reduce((sum, s) => sum + s.quantity, 0)
 
-if(!product){
-return res.status(404).json({error:"Product not found"})
-}
+  const lowStock = products.filter(p => p.stock < 5)
 
-if(product.stock < req.body.quantity){
-return res.status(400).json({error:"Not enough stock"})
-}
-
-product.stock -= req.body.quantity
-
-sales.push({
-id:uuid(),
-product:product.name,
-quantity:req.body.quantity,
-date:new Date()
+  res.json({
+    totalProducts: products.length,
+    totalSales: sales.length,
+    revenue,
+    lowStock
+  })
 })
 
-write(PRODUCTS,products)
-write(SALES,sales)
+/* -------------------------
+   EXPORT SALES
+------------------------- */
 
-res.json({message:"Sale recorded"})
-
+app.get("/export-sales", (req, res) => {
+  res.json(read(SALES))
 })
 
-/* DASHBOARD */
+/* -------------------------
+   ROOT ROUTE
+------------------------- */
 
-app.get("/dashboard",(req,res)=>{
-
-const products = read(PRODUCTS)
-const sales = read(SALES)
-
-const revenue = sales.reduce((sum,s)=>sum+s.quantity,0)
-
-const lowStock = products.filter(p=>p.stock < 5)
-
-res.json({
-totalProducts:products.length,
-totalSales:sales.length,
-revenue,
-lowStock
-})
-
-})
-
-/* EXPORT SALES */
-
-app.get("/export-sales",(req,res)=>{
-res.json(read(SALES))
-})
 app.get("/", (req, res) => {
-  res.redirect("/login.html")
+  res.sendFile(path.join(__dirname, "login.html"))
 })
+
+/* -------------------------
+   SERVER START
+------------------------- */
+
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
-console.log("Server running on port " + PORT)
+  console.log("Server running on port " + PORT)
 })
