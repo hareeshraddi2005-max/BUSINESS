@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body class="bg-gray-100 p-10">
+
+<h1 class="text-3xl font-bold mb-6">Inventory Dashboard</h1>
+
+<div class="grid grid-cols-3 gap-6">
+
+<div class="bg-white p-6 rounded shadow">
+<h2>Total Products</h2>
+<p id="products" class="text-3xl"></p>
+</div>
+
+<div class="bg-white p-6 rounded shadow">
+<h2>Total Sales</h2>
+<p id="sales" class="text-3xl"></p>
+</div>
+
+<div class="bg-white p-6 rounded shadow">
+<h2>Revenue</h2>
+<p id="revenue" class="text-3xl"></p>
+</div>
+
+</div>
+
+<div class="bg-white p-6 rounded shadow mt-10">
+
+<canvas id="chart"></canvas>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
